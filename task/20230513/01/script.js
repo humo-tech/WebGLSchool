@@ -177,9 +177,13 @@ class App3 {
         Object.keys(this.randomFlags).forEach(axes => {
             this.boxList.forEach(box => {
                 if(this.randomFlags[axes]) {
-                    box.mesh.position[axes] += ((Math.random() * 2) - 1) * 0.1
+                    box.mesh.position[axes] += ((Math.random() * 2) - 1) * 0.07
                 } else {
-                    box.mesh.position[axes] = box.position[axes]
+                    if(Math.abs(box.mesh.position[axes] - box.position[axes]) > 0.01) {
+                        box.mesh.position[axes] += (box.position[axes] - box.mesh.position[axes]) / 10 
+                    } else {
+                        box.mesh.position[axes] = box.position[axes]
+                    }
                 }
                 if (this.rotateFlag) {
                     box.mesh.rotation.y += 0.01
