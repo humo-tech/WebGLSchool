@@ -42,14 +42,14 @@ class App3 {
             intensity: 0.3
         }
     }
-    static get MATERIAL_PARAM_ODD () {
+    static get MATERIAL_PARAM0 () {
         return {
             color: 0x3333dd,
             opacity: 0.9,
             transparent: true,
         }
     }
-    static get MATERIAL_PARAM_EVEN () {
+    static get MATERIAL_PARAM1 () {
         return {
             color: 0x33dd33,
             opacity: 0.9,
@@ -139,8 +139,8 @@ class App3 {
         )
         this.scene.add(this.ambientLight)
 
-        this.materialEven = new THREE.MeshPhongMaterial(App3.MATERIAL_PARAM_EVEN)
-        this.materialOdd = new THREE.MeshPhongMaterial(App3.MATERIAL_PARAM_ODD)
+        this.material0 = new THREE.MeshPhongMaterial(App3.MATERIAL_PARAM0)
+        this.material1 = new THREE.MeshPhongMaterial(App3.MATERIAL_PARAM1)
 
         this.boxList = []
         const boxNumbers = {x: 10, y: 10, z: 10}
@@ -153,7 +153,7 @@ class App3 {
                     if ((x + y + z) % 2) continue
                     const zPos = (z / boxNumbers.z) * 2 - 1 
                     this.boxGeometry = new THREE.BoxGeometry(boxSizes.x, boxSizes.y, boxSizes.z)
-                    const box = new THREE.Mesh(this.boxGeometry, (x + y + z) % 4 ? this.materialEven : this.materialOdd)
+                    const box = new THREE.Mesh(this.boxGeometry, (x + y + z) % 4 ? this.material0 : this.material1)
 
                     box.position.x = xPos
                     box.position.y = yPos
@@ -175,7 +175,7 @@ class App3 {
         requestAnimationFrame(this.render)
 
         Object.keys(this.randomFlags).forEach(axes => {
-            this.boxList.forEach(box => {
+            this.boxList.forEach((box, index) => {
                 if(this.randomFlags[axes]) {
                     box.mesh.position[axes] += ((Math.random() * 2) - 1) * 0.07
                 } else {
@@ -185,15 +185,13 @@ class App3 {
                         box.mesh.position[axes] = box.position[axes]
                     }
                 }
+
+                const rotateAxes = ['x', 'y', 'z'][index % 3]
                 if (this.rotateFlag) {
-                    box.mesh.rotation.y += 0.01
-                    box.mesh.rotation.x += 0.01
+                    box.mesh.rotation[rotateAxes] += 0.02
                 } else {
-                    box.mesh.rotation.y = 0
-                    box.mesh.rotation.x = 0
-
+                    box.mesh.rotation[rotateAxes] = 0
                 }
-
             })
         })
 
