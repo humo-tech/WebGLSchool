@@ -81,16 +81,20 @@ class App3 {
             const key = KeyboardEvent.key
             if (['x', 'y', 'z'].includes(key)) {
                 this.randomFlags[key] = true
+                document.getElementById(`${key}Status`).classList.add('down')
             } else if (key === 'r') {
                 this.rotateFlag = true
+                document.getElementById(`${key}Status`).classList.add('down')
             }
         })
         window.addEventListener('keyup', (KeyboardEvent) => {
             const key = KeyboardEvent.key
             if (['x', 'y', 'z'].includes(key)) {
                 this.randomFlags[key] = false
+                document.getElementById(`${key}Status`).classList.remove('down')
             } else if (key === 'r') {
                 this.rotateFlag = false
+                document.getElementById(`${key}Status`).classList.remove('down')
             }
         })
     }
