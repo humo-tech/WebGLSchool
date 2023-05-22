@@ -150,9 +150,7 @@ class App3 {
             box.position.y = yPos
             box.position.z = zPos
 
-            //box.rotation.x = xxx
-            //box.rotation.y = yyy
-            //box.rotation.z = zzz
+            box.lookAt(new THREE.Vector3(0.0, 0.0, 0.0))
 
             this.scene.add(box)
         })
