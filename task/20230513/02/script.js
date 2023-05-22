@@ -197,6 +197,7 @@ class App3 {
     render () {
         requestAnimationFrame(this.render)
 
+        this.earth.material.opacity = Math.cos(Date.now() * 0.002) * 0.5 + 0.2
         this.controls.update()
         this.renderer.render(this.scene, this.camera)
     }
