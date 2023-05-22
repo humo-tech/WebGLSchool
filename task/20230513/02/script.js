@@ -16,14 +16,30 @@ const loadCSV = () => {
     })
 }
 
+const loadPopulation = () => {
+    // https://memorva.jp/ranking/unfpa/who_whs_population.php
+    return fetch('./population.csv')
+    .then(res => res.text())
+    .then(text => {
+        const dict = {}
+        text.split('\n').forEach((line, i) => {
+            //if(i > 0 && line.match(/^JP/)) {
+            const w = line.split('\t')
+            dict[w[1]] = Number(w[2] * 1000)
+        })
+        return dict
+    })
+}
+
 const deg2rad = (deg) => {
     return deg * (Math.PI / 180)
 }
     
 window.addEventListener('DOMContentLoaded', async () => {
     const app = new App3()
-    const data = await loadCSV()
-    app.init(data)
+    const coordinates = await loadCSV()
+    const population = await loadPopulation()
+    app.init(coordinates, population)
     app.render()
 }, false)
 
@@ -93,7 +109,7 @@ class App3 {
     }
 
 
-    async init (dataList) {
+    async init (coordinates, population) {
         this.renderer = new THREE.WebGLRenderer()
         this.renderer.setClearColor(new THREE.Color(App3.RENDERER_PARAM.clearColor))
         this.renderer.setSize(App3.RENDERER_PARAM.width, App3.RENDERER_PARAM.height)
@@ -136,8 +152,10 @@ class App3 {
         this.material = new THREE.MeshPhongMaterial(App3.MATERIAL_PARAM)
 
         this.boxList = []
-        dataList.forEach(data => {
-            this.boxGeometry = new THREE.BoxGeometry(0.03, 0.03, 0.03)
+        coordinates.forEach(data => {
+            const pop = (population[data[2]] || population[data[1]] || 1) / 100000000
+            if(!population[data[2]] && !population[data[1]]) console.log(data[1])
+            this.boxGeometry = new THREE.BoxGeometry(0.02, 0.02, pop)
             const box = new THREE.Mesh(this.boxGeometry, this.material)
 
             // https://ics.media/entry/10657/
@@ -168,7 +186,7 @@ class App3 {
             color: 0xffffff,
             map: earthTexture,
             transparent: true,
-            opacity: 0.8
+            opacity: 1
         })
         const earth = new THREE.Mesh(earthGeometry, earthMaterial)
 
