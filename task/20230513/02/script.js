@@ -1,6 +1,8 @@
 import * as THREE from '../../../lib/three.module.js'
 import { OrbitControls } from '../../../lib/OrbitControls.js'
 
+// https://github.com/dataarts/webgl-globe/blob/master/globe/globe.js
+
 const loadCSV = () => {
     // https://amano-tec.com/data/world.html
     return fetch('./r0411world_utf8.csv')
@@ -49,10 +51,10 @@ class App3 {
             fovy: 40,
             aspect: window.innerWidth / window.innerHeight,
             near: 0.1,
-            far: 20.0,
-            x: 1.0,
-            y: 1.0,
-            z: 4.0,
+            far: 200.0,
+            x: 100.0,
+            y: 100.0,
+            z: 100.0,
             lookAt: new THREE.Vector3(0.0, 0.0, 0.0)
         }
     }
@@ -98,6 +100,7 @@ class App3 {
         this.randomFlags = {x: false, y: false, z: false}
         this.rotateFlag = false
         this.axesHelper
+        this.earth
 
         this.render = this.render.bind(this);
 
@@ -152,23 +155,27 @@ class App3 {
         this.material = new THREE.MeshPhongMaterial(App3.MATERIAL_PARAM)
 
         this.boxList = []
+        const earthRadius = 40
         coordinates.forEach(data => {
-            const pop = (population[data[2]] || population[data[1]] || 1) / 100000000
+            const pop = (population[data[2]] || population[data[1]] || 1) / 10000000
             if(!population[data[2]] && !population[data[1]]) console.log(data[1])
-            this.boxGeometry = new THREE.BoxGeometry(0.02, 0.02, pop)
+            this.boxGeometry = new THREE.BoxGeometry(1.0, 1.0, 1.0)
+            this.boxGeometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0,0,-0.5)) // applyMatrix4 で、z軸の拡大基準を中心→原点（？）に変更している（のだと思う）
             const box = new THREE.Mesh(this.boxGeometry, this.material)
 
             // https://ics.media/entry/10657/
             const lat = deg2rad(data[7])
             const lon = deg2rad(180 + data[8])
-            const xPos = - Math.cos(lat) * Math.cos(lon)
-            const yPos = Math.sin(lat)
-            const zPos = Math.cos(lat) * Math.sin(lon)
+            const xPos = earthRadius * - Math.cos(lat) * Math.cos(lon)
+            const yPos = earthRadius * Math.sin(lat)
+            const zPos = earthRadius * Math.cos(lat) * Math.sin(lon)
             box.position.x = xPos
             box.position.y = yPos
             box.position.z = zPos
 
-            box.lookAt(new THREE.Vector3(0.0, 0.0, 0.0))
+            box.scale.z = pop
+
+            box.lookAt(new THREE.Vector3(0.0, 0.0, 0.0)) // 地球の中心を向くようにする
 
             this.scene.add(box)
         })
@@ -181,22 +188,23 @@ class App3 {
         // https://planetpixelemporium.com/earth.html
         const loader = new THREE.TextureLoader()
         const earthTexture = loader.load('./earthmap1k.jpg')
-        const earthGeometry = new THREE.SphereBufferGeometry(1, 30, 30);
+        const earthGeometry = new THREE.SphereGeometry(earthRadius, 30, 30);
         const earthMaterial = new THREE.MeshPhongMaterial({
             color: 0xffffff,
             map: earthTexture,
             transparent: true,
             opacity: 1
         })
-        const earth = new THREE.Mesh(earthGeometry, earthMaterial)
+        this.earth = new THREE.Mesh(earthGeometry, earthMaterial)
 
-        this.scene.add(earth)
+        this.scene.add(this.earth)
 
     }
 
     render () {
         requestAnimationFrame(this.render)
 
+        this.earth.material.opacity = Math.cos(Date.now() * 0.002) * 0.5 + 0.2
         this.controls.update()
         this.renderer.render(this.scene, this.camera)
     }
