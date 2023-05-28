@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta lang="utf-8" />
+    <title>WebGL スクール 第2回課題</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="./script.js" type="module"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      #control {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        font-size: 20px;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="webgl"></div>
+    <div id="control">
+      <div>
+        <label>
+          <input type="checkbox" id="power" checked />
+          電源
+        </label>
+      </div>
+      <div id="swing">
+        <label>
+          <input type="checkbox" id="horizontal" checked />
+          左右
+        </label>
+        <label>
+          <input type="checkbox" id="vertical" checked />
+          上下
+        </label>
+      </div>
+      <div id="strog">
+        <label><input name="strong" type="radio" value="0.2" />弱</label>
+        <label
+          ><input name="strong" type="radio" value="0.3" checked />中</label
+        >
+        <label><input name="strong" type="radio" value="0.6" />強</label>
+      </div>
+    </div>
+  </body>
+</html>
