@@ -1,6 +1,5 @@
 import * as THREE from "../../../lib/three.module.js";
 import { OrbitControls } from "../../../lib/OrbitControls.js";
-import { IcosahedronBufferGeometry } from "../../../../sample/sample_20230624/lib/three.module.js";
 
 window.addEventListener(
   "DOMContentLoaded",
