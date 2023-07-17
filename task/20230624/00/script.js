@@ -59,6 +59,7 @@ class App3 {
     this.material;
     this.hitMaterial;
     this.mesh;
+    this.initialized;
 
     this.render = this.render.bind(this);
 
@@ -188,12 +189,17 @@ class App3 {
     this.axesHelper = new THREE.AxesHelper(axesBarLength);
     this.scene.add(this.axesHelper);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+
+    this.initialized = true;
   }
 
   render() {
     requestAnimationFrame(this.render);
-    this.controls.update();
 
-    this.renderer.render(this.scene, this.camera);
+    if (this.initialized) {
+      this.controls.update();
+
+      this.renderer.render(this.scene, this.camera);
+    }
   }
 }
