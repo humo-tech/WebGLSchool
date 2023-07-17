@@ -19,8 +19,8 @@ class App3 {
       near: 0.1,
       far: 20.0,
       x: 1.0,
-      y: 3.0,
-      z: 15.0,
+      y: 1.0,
+      z: 3.0,
       lookAt: new THREE.Vector3(0.0, 0.0, 0.0),
     };
   }
