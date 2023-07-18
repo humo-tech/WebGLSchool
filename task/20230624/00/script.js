@@ -59,6 +59,7 @@ class App3 {
     this.hitMaterial;
     this.mesh;
     this.initialized;
+    this.photoAspectRatio;
 
     this.render = this.render.bind(this);
 
@@ -91,10 +92,9 @@ class App3 {
       const intersects = this.raycaster.intersectObjects([this.mesh]);
 
       if (intersects.length) {
-        this.mesh.geometry =
-          this.mesh.geometry === this.geometry
-            ? this.hitGeometry
-            : this.geometry;
+        const scale = this.mesh.scale.x === 1 ? 3 : 1;
+        this.mesh.scale.x = scale;
+        this.mesh.scale.y = scale * this.photoAspectRatio;
       }
     });
   }
@@ -163,12 +163,10 @@ class App3 {
 
     // テクスチャ
     this.texture = await this.asyncLoadTexture("./hachi.jpg");
-    console.log(this.texture);
-    const aspectRatio =
+    this.photoAspectRatio =
       this.texture.source.data.height / this.texture.source.data.width;
     // 板ポリ作る
-    this.geometry = new THREE.PlaneGeometry(3.0, 3.0 * aspectRatio);
-    this.hitGeometry = new THREE.PlaneGeometry(5.0, 5.0 * aspectRatio);
+    this.geometry = new THREE.PlaneGeometry(3.0, 3.0);
     this.material = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       opacity: 0.2,
@@ -180,6 +178,7 @@ class App3 {
       map: this.texture,
     });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
+    this.mesh.scale.y *= this.photoAspectRatio;
 
     this.scene.add(this.mesh);
 
