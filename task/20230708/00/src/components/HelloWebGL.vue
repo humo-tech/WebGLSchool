@@ -1,20 +1,26 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useWebGL } from '../composable/useWebGL';
 
+let webgl = {}
 const canvas = ref(null)
+const vertexNumber = ref(5)
 
 
 onMounted(() => {
-  console.log(canvas.value)
-  const { init } = useWebGL(canvas.value)
-  init()
+  webgl = useWebGL(canvas.value)
+  webgl.init(vertexNumber.value)
+})
+
+watch(vertexNumber, (newValue) => {
+  webgl.changeVertexNumber(newValue)
 })
 
 </script>
 
 <template>
   <canvas ref="canvas"></canvas>
+  <input type="number" min="3" max="128" v-model.number="vertexNumber">
 </template>
 
 <style scoped>

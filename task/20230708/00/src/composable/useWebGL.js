@@ -7,18 +7,21 @@ export function useWebGL (canvasElement) {
     const canvas = canvasElement
 
     let position
-    let positionStride
+    let positionStride = 3
     let positionVBO
     let color
-    let colorStride
+    let colorStride = 4
     let colorVBO
     let gl
     let program
     let uniformLocation = {}
     let startTime
     let isRender = false
+    let polygonVertexNumber = 8
 
-    const init = () => {
+    const init = (vertexNumber) => {
+        polygonVertexNumber = vertexNumber
+
         const size = Math.min(window.innerWidth, window.innerHeight);
         canvas.width  = size;
         canvas.height = size;
@@ -37,30 +40,103 @@ export function useWebGL (canvasElement) {
     }
 
     /**
+     * 正多角形の頂点を生成する関数
+     * @param {Number} [vertexNumber=5] 頂点の数
+     * @param {Number} [r=0.5] 半径
+     */
+    const createPolygonVertices = (vertexNumber = 5, r = 0.5) => {
+      if(vertexNumber < 3) {
+        throw new Error('not enough vertexNumber < 3')
+      }
+      
+      const center = [0, 0, 0]
+
+      const tmpVertices = []
+      const vertices = []
+      const unitAngle = (360 / vertexNumber) / 180 * Math.PI
+      for(let i=0; i<vertexNumber; i++) {
+        const angle = unitAngle * i + Math.PI / 2
+        const x = Math.cos(angle) * r
+        const y = Math.sin(angle) * r
+        tmpVertices.push([x, y, 0])
+      }
+
+      // index順に並べ直す（IBO使わない方法）
+      for(let i=0; i<vertexNumber; i++) {
+        const ii = i+1 < vertexNumber ? i + 1 : 0
+        vertices.push(center)
+        vertices.push(tmpVertices[i])
+        vertices.push(tmpVertices[ii])
+      }
+
+      return vertices.flat()
+    }
+
+    /**
+     * 
+     * @param {Number} h  hue 0-360
+     * @param {Number} s  saturation 0-255
+     * @param {Number} v  value 0-255
+     * @returns {Array<Number>} r, g, b 0-1
+     */
+    const hsv2rgb = (h, s, v) => {
+      const max = v
+      const min = max - ((s / 255) * max)
+      let r, g, b
+      if(h < 60) {
+        r = max
+        g = (h / 60) * (max - min) + min
+        b = min
+      } else if(h < 120) {
+        r = ((120 - h) / 60) * (max - min) + min
+        g = max
+        b = min
+      } else if(h < 180) {
+        r = min
+        g = max
+        b = ((h - 120) / 60) * (max - min) + min
+      } else if(h < 240) {
+        r = min
+        g = ((240 - h) / 60) * (max - min) + min
+        b = max
+      } else if(h < 300) {
+        r = ((h - 240) / 60) * (max - min) + min
+        g = min
+        b = max
+      } else {
+        r = max
+        g = min
+        b = ((360 - h)/ 60) * (max - min) + min
+      }
+
+      return [r/255, g/255, b/255]
+    }
+
+    /**
      * 頂点属性（頂点ジオメトリ）のセットアップを行う
      */
     const setupGeometry = () => {
         // 頂点座標の定義
-        position = [
-           0.0,  0.5,  0.0, // ひとつ目の頂点の x, y, z 座標
-           0.5, -0.5,  0.0, // ふたつ目の頂点の x, y, z 座標
-          -0.5, -0.5,  0.0, // みっつ目の頂点の x, y, z 座標
-        ];
-        // 要素数は XYZ の３つ
-        positionStride = 3;
+        position = createPolygonVertices(polygonVertexNumber)
         // VBO を生成
         positionVBO = WebGLUtility.createVBO(gl, position);
 
-        // 頂点の色の定義
-        color = [
-          1.0, 0.0, 0.0, 1.0, // ひとつ目の頂点の r, g, b, a カラー
-          0.0, 1.0, 0.0, 1.0, // ふたつ目の頂点の r, g, b, a カラー
-          0.0, 0.0, 1.0, 1.0, // みっつ目の頂点の r, g, b, a カラー
-        ];
-        // 要素数は RGBA の４つ
-        colorStride = 4;
+        // 色作成
+        color = []
+        const tmpColor = []
+        for(let i=0; i<polygonVertexNumber; i++) {
+          tmpColor.push(hsv2rgb(i/polygonVertexNumber * 360, 255, 255))
+        }
+
+        // index順に並べ直す（IBO使わない方法）
+        for(let i=0; i<polygonVertexNumber; i++) {
+          const ii = i+1 < polygonVertexNumber ? i + 1 : 0
+          color.push([0, 0, 0, 1.0])
+          color.push([...tmpColor[i], 1.0])
+          color.push([...tmpColor[ii], 1.0])
+        }
         // VBO を生成
-        colorVBO = WebGLUtility.createVBO(gl, color);
+        colorVBO = WebGLUtility.createVBO(gl, color.flat());
     }
 
     /**
@@ -132,8 +208,15 @@ export function useWebGL (canvasElement) {
       gl.drawArrays(gl.TRIANGLES, 0, position.length / positionStride);
     }
 
+    const changeVertexNumber = (vertexNumber) => {
+      polygonVertexNumber = vertexNumber
+      setupGeometry()
+      setupLocation()
+    }
+
     return {
         gl,
+        changeVertexNumber,
         init,
         start,
         stop,

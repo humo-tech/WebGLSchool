@@ -15,3 +15,10 @@ html, body {
 canvas {
   margin: 0px auto;
 }
+
+input {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+}
