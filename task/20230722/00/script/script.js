@@ -313,6 +313,15 @@ class App {
     this.startTime = Date.now();
     // レンダリングを行っているフラグを立てておく
     this.isRender = true;
+
+    // VBO と IBO を設定し、描画する
+    WebGLUtility.enableBuffer(
+      this.gl,
+      this.torusVBO,
+      this.attributeLocation,
+      this.attributeStride,
+      this.torusIBO
+    );
     // レンダリングの開始
     this.render();
   }
@@ -370,14 +379,6 @@ class App {
     gl.uniformMatrix4fv(this.uniformLocation.mvpMatrix, false, mvp);
     gl.uniformMatrix4fv(this.uniformLocation.normalMatrix, false, normalMatrix);
 
-    // VBO と IBO を設定し、描画する
-    WebGLUtility.enableBuffer(
-      gl,
-      this.torusVBO,
-      this.attributeLocation,
-      this.attributeStride,
-      this.torusIBO
-    );
     gl.drawElements(
       gl.TRIANGLES,
       this.torusGeometry.index.length,
