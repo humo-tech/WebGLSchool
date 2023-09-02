@@ -266,7 +266,7 @@ class App {
     const column = 32;
     const innerRadius = 0.4;
     const outerRadius = 0.8;
-    const color = [0.5, 0.0, 0.0, 1.0];
+    const color = [1.0, 1.0, 1.0, 1.0];
     this.torusGeometry = WebGLGeometry.torus(
       row,
       column,
