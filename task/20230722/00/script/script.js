@@ -35,7 +35,7 @@ window.addEventListener(
       culling: true,
       depthTest: true,
       rotation: false,
-      fragNormal: false,
+      fragShadow: false,
     };
 
     // バックフェイスカリングの有効・無効
@@ -51,8 +51,8 @@ window.addEventListener(
       app.setRotation(v.value);
     });
     // フラグメントシェーダで影をつけるかどうか
-    pane.addInput(parameter, "fragNormal").on("change", (v) => {
-      app.setFragmentNormal(v.value);
+    pane.addInput(parameter, "fragShadow").on("change", (v) => {
+      app.setFragmentShadow(v.value);
     });
 
     const f = pane.addFolder({
@@ -162,6 +162,17 @@ class App {
      * @type {boolean}
      */
     this.isRotation = false;
+    /**
+     * フラグメントシェーダで陰影を付けるかどうか
+     */
+    this.isFragmentShadow = false;
+    /**
+     * シェーダー用のカスタム定義
+     * @type {object:boolean}
+     */
+    this.customDefinitions = {
+      FRAGMENT_SHADOW: false,
+    };
 
     // this を固定するためのバインド処理
     this.resize = this.resize.bind(this);
@@ -209,11 +220,23 @@ class App {
   }
 
   /**
-   * isFragmentNormal を設定する
+   * isFragmentShadow を設定する
    * @param {boolean} flag - 設定する値
    */
-  setFragmentNormal(flag) {
-    this.isFragmentNormal = flag;
+  async setFragmentShadow(flag) {
+    this.isFragmentShadow = flag;
+    this.customDefinitions.FRAGMENT_SHADOW = this.isFragmentShadow;
+    // -------------
+    // reduce true なキーのみの配列を作っている
+    // -------------
+    const defines = Object.keys(this.customDefinitions).reduce((pre, cur) => {
+      if (this.customDefinitions[cur] === true) pre.push(cur);
+      return pre;
+    }, []);
+    console.log(defines);
+    // -------------
+    await this.setupProgram(defines);
+    this.setupLocation();
   }
 
   /**
@@ -263,29 +286,34 @@ class App {
         const error = new Error("not initialized");
         reject(error);
       } else {
-        let vs = null;
-        let fs = null;
-        WebGLUtility.loadFile("./shader/main.vert")
-          .then((vertexShaderSource) => {
-            vs = WebGLUtility.createShaderObject(
-              gl,
-              vertexShaderSource,
-              gl.VERTEX_SHADER
-            );
-            return WebGLUtility.loadFile("./shader/main.frag");
-          })
-          .then((fragmentShaderSource) => {
-            fs = WebGLUtility.createShaderObject(
-              gl,
-              fragmentShaderSource,
-              gl.FRAGMENT_SHADER
-            );
-            this.program = WebGLUtility.createProgramObject(gl, vs, fs);
-            // Promise を解決
-            resolve();
-          });
+        this.setupProgram().then(resolve).catch(reject);
       }
     });
+  }
+
+  /**
+   * shaderを読み込みprogramを作成する
+   * @param {Array} [customDefinitions] シェーダー用のカスタム定数 // MapLibreGLJS の実装を参考に
+   */
+  async setupProgram(customDefinitions = []) {
+    const defines = customDefinitions.map((define) => `#define ${define};`);
+    const vertexShaderSource = await WebGLUtility.loadFile(
+      "./shader/main.vert"
+    );
+    const vs = WebGLUtility.createShaderObject(
+      this.gl,
+      defines.concat(vertexShaderSource).join("\n"),
+      this.gl.VERTEX_SHADER
+    );
+    const fragmentShaderSource = await WebGLUtility.loadFile(
+      "./shader/main.frag"
+    );
+    const fs = WebGLUtility.createShaderObject(
+      this.gl,
+      defines.concat(fragmentShaderSource).join("\n"),
+      this.gl.FRAGMENT_SHADER
+    );
+    this.program = WebGLUtility.createProgramObject(this.gl, vs, fs);
   }
 
   /**
@@ -335,7 +363,7 @@ class App {
     this.uniformLocation = {
       mvpMatrix: gl.getUniformLocation(this.program, "mvpMatrix"),
       normalMatrix: gl.getUniformLocation(this.program, "normalMatrix"), // 法線変換行列 @@@
-      fragmentNormal: gl.getUniformLocation(this.program, "fragmentNormal"), // fragmentシェーダで法線つけるか
+      fragmentShadow: gl.getUniformLocation(this.program, "fragmentShadow"), // fragmentシェーダで法線つけるか
     };
   }
 
@@ -426,10 +454,6 @@ class App {
     gl.useProgram(this.program);
     gl.uniformMatrix4fv(this.uniformLocation.mvpMatrix, false, mvp);
     gl.uniformMatrix4fv(this.uniformLocation.normalMatrix, false, normalMatrix);
-    gl.uniform1f(
-      this.uniformLocation.fragmentNormal,
-      this.isFragmentNormal ? 1.0 : 0.0
-    );
 
     gl.drawElements(
       gl.TRIANGLES,
