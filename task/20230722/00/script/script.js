@@ -35,6 +35,7 @@ window.addEventListener(
       culling: true,
       depthTest: true,
       rotation: false,
+      fragNormal: false,
     };
 
     // バックフェイスカリングの有効・無効
@@ -48,6 +49,10 @@ window.addEventListener(
     // 回転の有無
     pane.addInput(parameter, "rotation").on("change", (v) => {
       app.setRotation(v.value);
+    });
+    // フラグメントシェーダで影をつけるかどうか
+    pane.addInput(parameter, "fragNormal").on("change", (v) => {
+      app.setFragmentNormal(v.value);
     });
   },
   false
@@ -173,6 +178,14 @@ class App {
   }
 
   /**
+   * isFragmentNormal を設定する
+   * @param {boolean} flag - 設定する値
+   */
+  setFragmentNormal(flag) {
+    this.isFragmentNormal = flag;
+  }
+
+  /**
    * 初期化処理を行う
    */
   init() {
@@ -253,7 +266,7 @@ class App {
     const column = 32;
     const innerRadius = 0.4;
     const outerRadius = 0.8;
-    const color = [1.0, 1.0, 1.0, 1.0];
+    const color = [0.5, 0.0, 0.0, 1.0];
     this.torusGeometry = WebGLGeometry.torus(
       row,
       column,
@@ -288,6 +301,7 @@ class App {
     this.uniformLocation = {
       mvpMatrix: gl.getUniformLocation(this.program, "mvpMatrix"),
       normalMatrix: gl.getUniformLocation(this.program, "normalMatrix"), // 法線変換行列 @@@
+      fragmentNormal: gl.getUniformLocation(this.program, "fragmentNormal"), // fragmentシェーダで法線つけるか
     };
   }
 
@@ -378,6 +392,10 @@ class App {
     gl.useProgram(this.program);
     gl.uniformMatrix4fv(this.uniformLocation.mvpMatrix, false, mvp);
     gl.uniformMatrix4fv(this.uniformLocation.normalMatrix, false, normalMatrix);
+    gl.uniform1f(
+      this.uniformLocation.fragmentNormal,
+      this.isFragmentNormal ? 1.0 : 0.0
+    );
 
     gl.drawElements(
       gl.TRIANGLES,
