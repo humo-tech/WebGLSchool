@@ -174,6 +174,10 @@ class App {
       FRAGMENT_SHADOW: false,
     };
 
+    Object.getOwnPropertyNames(this.customDefinitions).forEach((propName) =>
+      this.watchValue(this.customDefinitions, propName, this.updateProgram)
+    );
+
     // this を固定するためのバインド処理
     this.resize = this.resize.bind(this);
     this.render = this.render.bind(this);
@@ -223,9 +227,18 @@ class App {
    * isFragmentShadow を設定する
    * @param {boolean} flag - 設定する値
    */
-  async setFragmentShadow(flag) {
+  setFragmentShadow(flag) {
     this.isFragmentShadow = flag;
     this.customDefinitions.FRAGMENT_SHADOW = this.isFragmentShadow;
+    this.updateProgram();
+  }
+
+  /**
+   * customDefinitions を用いてプログラム(Shader)を更新する
+   * @returns
+   */
+  async updateProgram() {
+    if (!this) return;
     // -------------
     // reduce true なキーのみの配列を作っている
     // -------------
@@ -233,10 +246,27 @@ class App {
       if (this.customDefinitions[cur] === true) pre.push(cur);
       return pre;
     }, []);
-    console.log(defines);
     // -------------
+
     await this.setupProgram(defines);
     this.setupLocation();
+  }
+
+  /**
+   * オブジェクトの変更検知
+   * @param {*} obj
+   * @param {*} propertyName
+   * @param {*} callback
+   */
+  watchValue(obj, propertyName, callback) {
+    let value = obj[propertyName];
+    Object.defineProperty(obj, propertyName, {
+      get: () => value,
+      set: (newValue) => {
+        value = newValue;
+        callback(newValue);
+      },
+    });
   }
 
   /**
