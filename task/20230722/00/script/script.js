@@ -24,8 +24,8 @@ window.addEventListener(
     const app = new App();
     app.init();
     app.load().then(() => {
-      app.setupGeometry();
       app.setupLocation();
+      app.setupGeometry();
       app.start();
     });
 
@@ -54,6 +54,26 @@ window.addEventListener(
     pane.addInput(parameter, "fragNormal").on("change", (v) => {
       app.setFragmentNormal(v.value);
     });
+
+    const f = pane.addFolder({
+      title: "Torus",
+      expanded: false,
+    });
+
+    f.addInput(app.torusParams, "row", { min: 12, max: 256, step: 2 }).on(
+      "change",
+      (v) => {
+        app.torusParams.row = v.value;
+        app.setupGeometry();
+      }
+    );
+    f.addInput(app.torusParams, "column", { min: 3, max: 64, step: 1 }).on(
+      "change",
+      (v) => {
+        app.torusParams.column = v.value;
+        app.setupGeometry();
+      }
+    );
   },
   false
 );
@@ -96,6 +116,17 @@ class App {
      * @type {object.<WebGLUniformLocation>}
      */
     this.uniformLocation = null;
+    /**
+     * torus トーラスの設定
+     * @type {object}
+     */
+    this.torusParams = {
+      row: 256,
+      column: 4,
+      innerRadius: 0.4,
+      outerRadius: 0.8,
+      color: [1.0, 1.0, 1.0, 1.0],
+    };
     /**
      * torus ジオメトリの情報を保持するオブジェクト
      * @type {object}
@@ -262,17 +293,12 @@ class App {
    */
   setupGeometry() {
     // トーラスのジオメトリ情報を取得
-    const row = 256;
-    const column = 4;
-    const innerRadius = 0.4;
-    const outerRadius = 0.8;
-    const color = [1.0, 1.0, 1.0, 1.0];
     this.torusGeometry = WebGLGeometry.torus(
-      row,
-      column,
-      innerRadius,
-      outerRadius,
-      color
+      this.torusParams.row,
+      this.torusParams.column,
+      this.torusParams.innerRadius,
+      this.torusParams.outerRadius,
+      this.torusParams.color
     );
 
     // VBO と IBO を生成する
@@ -282,6 +308,14 @@ class App {
       WebGLUtility.createVBO(this.gl, this.torusGeometry.color),
     ];
     this.torusIBO = WebGLUtility.createIBO(this.gl, this.torusGeometry.index);
+
+    WebGLUtility.enableBuffer(
+      this.gl,
+      this.torusVBO,
+      this.attributeLocation,
+      this.attributeStride,
+      this.torusIBO
+    );
   }
 
   /**
