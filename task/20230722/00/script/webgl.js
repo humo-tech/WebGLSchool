@@ -1,4 +1,3 @@
-
 /**
  * WebGL の API を目的別にまとめたユーティリティクラス
  * @class
@@ -13,20 +12,30 @@ export class WebGLUtility {
   static loadFile(path) {
     return new Promise((resolve, reject) => {
       // fetch を使ってファイルにアクセスする
-      fetch(path)
-      .then((res) => {
-        // テキストとして処理する
-        return res.text();
-      })
-      .then((text) => {
-        // テキストを引数に Promise を解決する
-        resolve(text);
-      })
-      .catch((err) => {
-        // なんらかのエラー
-        reject(err);
-      });
+      this.cacheRequest(path)
+        .then((text) => {
+          // テキストを引数に Promise を解決する
+          resolve(text);
+        })
+        .catch((err) => {
+          // なんらかのエラー
+          reject(err);
+        });
     });
+  }
+
+  /**
+   * URLごとにリクエストをキャッシュしてtextをfetchする関数
+   * @param {string} path - 読み込むファイルのパス
+   * @param {boolean} forceFeatch - キャッシュせずに読み込む
+   * @returns
+   */
+  static cacheRequest(path, forceFeath = false) {
+    if (this.cacheRequest.cache == null) this.cacheRequest.cache = {};
+    if (!this.cacheRequest.cache[path] || forceFeath) {
+      this.cacheRequest.cache[path] = fetch(path).then((res) => res.text());
+    }
+    return this.cacheRequest.cache[path];
   }
 
   /**
@@ -36,10 +45,10 @@ export class WebGLUtility {
    */
   static createWebGLContext(canvas) {
     // canvas から WebGL コンテキスト取得を試みる
-    const gl = canvas.getContext('webgl');
+    const gl = canvas.getContext("webgl");
     if (gl == null) {
       // WebGL コンテキストが取得できない場合はエラー
-      throw new Error('webgl not supported');
+      throw new Error("webgl not supported");
       return null;
     } else {
       return gl;
@@ -109,7 +118,11 @@ export class WebGLUtility {
     // バッファを gl.ARRAY_BUFFER としてバインドする
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
     // バインドしたバッファに Float32Array オブジェクトに変換した配列を設定する
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexArray), gl.STATIC_DRAW);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array(vertexArray),
+      gl.STATIC_DRAW
+    );
     // 安全のために最後にバインドを解除してからバッファオブジェクトを返す
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     return vbo;
@@ -127,7 +140,11 @@ export class WebGLUtility {
     // バッファを gl.ELEMENT_ARRAY_BUFFER としてバインドする
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
     // バインドしたバッファに Int16Array オブジェクトに変換した配列を設定する
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Int16Array(indexArray), gl.STATIC_DRAW);
+    gl.bufferData(
+      gl.ELEMENT_ARRAY_BUFFER,
+      new Int16Array(indexArray),
+      gl.STATIC_DRAW
+    );
     // 安全のために最後にバインドを解除してからバッファオブジェクトを返す
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
     return ibo;
@@ -148,7 +165,14 @@ export class WebGLUtility {
       // 頂点属性ロケーションの有効化を行う
       gl.enableVertexAttribArray(attLocation[i]);
       // 対象のロケーションのストライドやデータ型を設定する
-      gl.vertexAttribPointer(attLocation[i], attStride[i], gl.FLOAT, false, 0, 0);
+      gl.vertexAttribPointer(
+        attLocation[i],
+        attStride[i],
+        gl.FLOAT,
+        false,
+        0,
+        0
+      );
     }
     if (ibo != null) {
       // IBO が与えられている場合はバインドする
@@ -156,4 +180,3 @@ export class WebGLUtility {
     }
   }
 }
-
