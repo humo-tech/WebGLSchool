@@ -35,7 +35,7 @@ window.addEventListener(
       culling: true,
       depthTest: true,
       rotation: false,
-      fragNormal: false,
+      fragShadow: false,
     };
 
     // バックフェイスカリングの有効・無効
@@ -51,8 +51,8 @@ window.addEventListener(
       app.setRotation(v.value);
     });
     // フラグメントシェーダで影をつけるかどうか
-    pane.addInput(parameter, "fragNormal").on("change", (v) => {
-      app.setFragmentNormal(v.value);
+    pane.addInput(parameter, "fragShadow").on("change", (v) => {
+      app.setFragmentShadow(v.value);
     });
 
     const f = pane.addFolder({
@@ -209,11 +209,11 @@ class App {
   }
 
   /**
-   * isFragmentNormal を設定する
+   * isFragmentShadow を設定する
    * @param {boolean} flag - 設定する値
    */
-  setFragmentNormal(flag) {
-    this.isFragmentNormal = flag;
+  setFragmentShadow(flag) {
+    this.isFragmentShadow = flag;
   }
 
   /**
@@ -335,7 +335,7 @@ class App {
     this.uniformLocation = {
       mvpMatrix: gl.getUniformLocation(this.program, "mvpMatrix"),
       normalMatrix: gl.getUniformLocation(this.program, "normalMatrix"), // 法線変換行列 @@@
-      fragmentNormal: gl.getUniformLocation(this.program, "fragmentNormal"), // fragmentシェーダで法線つけるか
+      fragmentShadow: gl.getUniformLocation(this.program, "fragmentShadow"), // fragmentシェーダで法線つけるか
     };
   }
 
@@ -427,8 +427,8 @@ class App {
     gl.uniformMatrix4fv(this.uniformLocation.mvpMatrix, false, mvp);
     gl.uniformMatrix4fv(this.uniformLocation.normalMatrix, false, normalMatrix);
     gl.uniform1f(
-      this.uniformLocation.fragmentNormal,
-      this.isFragmentNormal ? 1.0 : 0.0
+      this.uniformLocation.fragmentShadow,
+      this.isFragmentShadow ? 1.0 : 0.0
     );
 
     gl.drawElements(
