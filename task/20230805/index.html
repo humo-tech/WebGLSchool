@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>第7回課題：テクスチャを複数使用してみよう</title>
+    <style>
+      body {
+        margin: 0;
+        background-color: #661241;
+      }
+      img {
+        box-sizing: border-box;
+      }
+      #canvas {
+        width: 640px;
+        height: 400px;
+      }
+      .thumb {
+        width: 120px;
+        border-radius: 5px;
+        border: 1px solid #999;
+        cursor: pointer;
+      }
+      ul {
+        list-style-type: none;
+        display: flex;
+        gap: 10px;
+        padding: 0;
+        margin: 10px;
+      }
+      input[type="radio"] {
+        display: none;
+      }
+      input[type="radio"]:checked ~ img {
+        border: 2px solid #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <ul>
+      <li>
+        <label
+          ><input
+            type="radio"
+            name="background"
+            checked
+            value="./images/mountains-190055_1280.jpg" /><img
+            class="thumb"
+            src="./images/mountains-190055_1280.jpg"
+        /></label>
+      </li>
+      <li>
+        <label
+          ><input
+            type="radio"
+            name="background"
+            value="./images/black-1072366_1280.jpg" /><img
+            class="thumb"
+            src="./images/black-1072366_1280.jpg"
+        /></label>
+      </li>
+      <li>
+        <label
+          ><input
+            type="radio"
+            name="background"
+            value="./images/sunflowers-3292932_1280.jpg"
+          /><img class="thumb" src="./images/sunflowers-3292932_1280.jpg" />
+        </label>
+      </li>
+    </ul>
+    <script src="./scripts/webgl.js"></script>
+    <script src="./scripts/app.js" type="module"></script>
+  </body>
+</html>
