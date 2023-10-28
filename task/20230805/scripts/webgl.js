@@ -35,7 +35,7 @@ const loadVideo = (src, options) => {
           if (typeof value === "boolean") {
             video[key] = value;
           } else {
-            video.setAttribute(key, value);
+            video.setAttribute(key, "");
           }
         }
       });
