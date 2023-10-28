@@ -19,6 +19,7 @@ const gl = canvas.getContext("webgl");
 
 const params = new URLSearchParams(location.search);
 const nopreview = params.has("nopreview");
+const playsInlineByAttr = params.has("playsInlineByAttr");
 
 // テクスチャ読み込む
 const img0 = await loadImage("./images/mountains-190055_1280.jpg");
@@ -26,7 +27,7 @@ const tex0 = createTexture(gl, img0, gl.TEXTURE0);
 const video = await loadVideo("./images/blue.mp4", {
   autoplay: true,
   muted: true,
-  playsInline: true,
+  playsInline: playsInlineByAttr ? "playsInline" : true,
   controls: !nopreview,
   loop: true,
 });
