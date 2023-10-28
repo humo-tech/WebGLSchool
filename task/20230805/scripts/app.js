@@ -23,7 +23,7 @@ const tex0 = createTexture(gl, img0, gl.TEXTURE0);
 const video = await loadVideo("./images/blue.mp4", {
   autoplay: true,
   muted: true,
-  playsinline: true,
+  playsInline: true,
   controls: true,
   loop: true,
 });
