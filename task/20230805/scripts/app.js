@@ -17,19 +17,27 @@ const getPaneValue = (pane, key) => {
 const canvas = document.getElementById("canvas");
 const gl = canvas.getContext("webgl");
 
+const params = new URLSearchParams(location.search);
+const nopreview = params.has("nopreview");
+
 // テクスチャ読み込む
 const img0 = await loadImage("./images/mountains-190055_1280.jpg");
 const tex0 = createTexture(gl, img0, gl.TEXTURE0);
 const video = await loadVideo("./images/blue.mp4", {
   autoplay: true,
   muted: true,
-  playsinline: true,
-  controls: true,
+  playsInline: true,
+  controls: !!nopreview,
   loop: true,
 });
 const tex1 = createTexture(gl, video, gl.TEXTURE1);
 video.width = 320;
-document.body.appendChild(video);
+
+if (nopreview) {
+  video.play();
+} else {
+  document.body.appendChild(video);
+}
 
 // 貼り付けるジオメトリを作る
 // 板ポリの座標
