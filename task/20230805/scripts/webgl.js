@@ -31,7 +31,13 @@ const loadVideo = (src, options) => {
     const video = document.createElement("video");
     if (options) {
       Object.entries(options).forEach(([key, value]) => {
-        video[key] = value;
+        if (value !== false) {
+          if (typeof value === "boolean") {
+            video[key] = value;
+          } else {
+            video.setAttribute(key, value);
+          }
+        }
       });
     }
     video.addEventListener("canplay", () => {
